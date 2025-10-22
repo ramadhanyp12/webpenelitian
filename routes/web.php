@@ -48,28 +48,50 @@ Route::middleware(['auth', \App\Http\Middleware\IsAdmin::class])
             return view('admin.dashboard');
         })->name('dashboard');
 
-        // Tickets admin (sudah ada)
+        // Tickets (Admin)
         Route::resource('tickets', \App\Http\Controllers\Admin\TicketController::class);
-        Route::delete('tickets/{ticket}/documents/{document}', [\App\Http\Controllers\Admin\TicketController::class, 'destroyDocument'])
-              ->name('tickets.documents.destroy');
+        Route::delete(
+            'tickets/{ticket}/documents/{document}',
+            [\App\Http\Controllers\Admin\TicketController::class, 'destroyDocument']
+        )->name('tickets.documents.destroy');
 
-        Route::get('approvals', [AdminApprovalController::class, 'index'])->name('approvals.index');
-        Route::get('approvals/create/{ticket}', [AdminApprovalController::class, 'create'])->name('approvals.create');
-        Route::post('approvals/store/{ticket}', [AdminApprovalController::class, 'store'])->name('approvals.store');
-        Route::get('approvals/{approval}/edit', [AdminApprovalController::class, 'edit'])->name('approvals.edit');
-        Route::put('approvals/{approval}', [AdminApprovalController::class, 'update'])->name('approvals.update');
-        Route::post('approvals/{approval}/generate-pdf', [AdminApprovalController::class, 'generatePdf'])->name('approvals.generatePdf');
-        Route::post('approvals/deny/{ticket}', [AdminApprovalController::class, 'deny'])->name('approvals.deny');
-        // routes/web.php (dalam group admin)
-Route::get('approvals/{approval}', [\App\Http\Controllers\Admin\ApprovalController::class, 'show'])
-    ->name('approvals.show');
+        // ======= APPROVALS (URUTAN SPESIFIK → GENERIK) =======
+        // List approvals + antrian tiket
+        Route::get('approvals', [\App\Http\Controllers\Admin\ApprovalController::class, 'index'])
+            ->name('approvals.index');
 
-    // routes/web.php (di dalam group admin yg sudah ada)
-Route::resource('users', \App\Http\Controllers\Admin\UserController::class)
-    ->only(['index','show','edit','update', 'destroy'])
-    ->names('users');
+        // Buat dari tiket tertentu (HARUS di atas {approval})
+        Route::get('approvals/create/{ticket}', [\App\Http\Controllers\Admin\ApprovalController::class, 'create'])
+            ->name('approvals.create');
+        Route::post('approvals/store/{ticket}', [\App\Http\Controllers\Admin\ApprovalController::class, 'store'])
+            ->name('approvals.store');
 
+        // Edit & update approval tertentu
+        Route::get('approvals/{approval}/edit', [\App\Http\Controllers\Admin\ApprovalController::class, 'edit'])
+            ->name('approvals.edit');
+        Route::put('approvals/{approval}', [\App\Http\Controllers\Admin\ApprovalController::class, 'update'])
+            ->name('approvals.update');
 
+        // Generate PDF
+        Route::post('approvals/{approval}/generate-pdf', [\App\Http\Controllers\Admin\ApprovalController::class, 'generatePdf'])
+            ->name('approvals.generatePdf');
+
+        // Tolak tiket
+        Route::post('approvals/deny/{ticket}', [\App\Http\Controllers\Admin\ApprovalController::class, 'deny'])
+            ->name('approvals.deny');
+
+        // LIHAT/SHOW DETAIL APPROVAL (HARUS di bawah route yg spesifik)
+        Route::get('approvals/{approval}', [\App\Http\Controllers\Admin\ApprovalController::class, 'show'])
+            ->name('approvals.show');
+
+        // LIHAT/UNDUH PDF HASIL GENERATE
+        Route::get('approvals/{approval}/pdf', [\App\Http\Controllers\Admin\ApprovalController::class, 'download'])
+            ->name('approvals.pdf');
+
+        // Users (Admin)
+        Route::resource('users', \App\Http\Controllers\Admin\UserController::class)
+            ->only(['index','show','edit','update','destroy'])
+            ->names('users');
     });
 
 

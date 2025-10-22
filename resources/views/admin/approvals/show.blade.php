@@ -18,7 +18,7 @@
 
   <div class="bg-white shadow rounded p-4 space-y-2 max-w-2xl">
     <div><span class="font-semibold">Ticket ID:</span> #{{ $approval->ticket_id }}</div>
-    <div><span class="font-semibold">User:</span> {{ $approval->ticket->user->name ?? '-' }}</div>
+    <div><span class="font-semibold">User:</span> {{ optional(optional($approval->ticket)->user)->name ?? '-' }}</div>
     <div><span class="font-semibold">Nama Mahasiswa:</span> {{ $approval->nama_mahasiswa }}</div>
     <div><span class="font-semibold">NIM:</span> {{ $approval->nim_mahasiswa }}</div>
     <div><span class="font-semibold">Prodi:</span> {{ $approval->prodi_mahasiswa }}</div>
@@ -49,13 +49,14 @@
         @else - @endif
       </div>
       <div>
-        PDF Hasil:
-        @if($approval->generated_pdf_path)
-          <a class="text-blue-600 underline" target="_blank" href="{{ asset('storage/'.$approval->generated_pdf_path) }}">Unduh</a>
-        @else
-          <span class="text-gray-500">Belum digenerate</span>
-        @endif
-      </div>
+  PDF Hasil:
+  @if($approval->generated_pdf_path)
+    <a class="text-blue-600 underline" target="_blank"
+       href="{{ route('admin.approvals.pdf', $approval) }}">Unduh</a>
+  @else
+    <span class="text-gray-500">Belum digenerate</span>
+  @endif
+</div>
     </div>
   </div>
 

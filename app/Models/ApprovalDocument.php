@@ -34,10 +34,4 @@ class ApprovalDocument extends Model
         return $this->belongsTo(Ticket::class);
     }
 
-    public function show(ApprovalDocument $approval)
-    {
-    $approval->load('ticket.user');
-    return view('admin.approvals.show', compact('approval'));
-    }
-
 }

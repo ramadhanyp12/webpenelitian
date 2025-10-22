@@ -190,4 +190,26 @@ class ApprovalController extends Controller
 
     return back()->with('success', 'PDF berhasil dibuat & disimpan.');
 }
+
+public function show(ApprovalDocument $approval)
+{
+    $approval->load('ticket.user');
+    return view('admin.approvals.show', compact('approval'));
+}
+
+public function download(ApprovalDocument $approval)
+{
+    abort_unless($approval->generated_pdf_path, 404, 'PDF belum digenerate.');
+
+    $full = storage_path('app/public/'.$approval->generated_pdf_path);
+
+    if (!file_exists($full)) {
+        abort(404, 'File PDF tidak ditemukan di server.');
+    }
+
+    return response()->file($full);
+    // Atau kalau mau auto-download:
+    // return Storage::disk('public')->download($approval->generated_pdf_path);
+}
+
 }
