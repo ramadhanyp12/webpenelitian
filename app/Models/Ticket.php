@@ -13,7 +13,8 @@ class Ticket extends Model
     protected $fillable = [
         'user_id', 'nama', 'nim', 'program_studi', 'kampus', 'tahun_ajaran',
         'judul_penelitian', 'keterangan', 'lokasi_pengadilan', 'status',
-        'approved_by', 'approved_at', 'alasan_ditolak', 'hasil_pdf_path', // tambahkan ini kalau kolomnya ada
+        'approved_by', 'approved_at', 'alasan_ditolak', 'hasil_pdf_path', 'hasil_pdf_path',
+        'hasil_penelitian_path', // tambahkan ini kalau kolomnya ada
         // ⚠️ TIDAK ada: surat_pdf_path, lampiran_pdf_path (karena sudah pindah ke tabel ticket_documents)
     ];
 

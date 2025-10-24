@@ -247,4 +247,38 @@ class TicketController extends Controller
         ->route('admin.tickets.index')
         ->with('success', 'Ticket beserta dokumen terkait berhasil dihapus.');
 }
+
+// TicketController.php
+public function uploadHasil(Request $request, Ticket $ticket)
+{
+    abort_unless($ticket->user_id === auth()->id(), 403);
+
+    $request->validate([
+        'hasil' => ['required','file','mimes:pdf','max:20480'],
+    ]);
+
+    if ($ticket->hasil_penelitian_path) {
+        Storage::disk('public')->delete($ticket->hasil_penelitian_path);
+    }
+
+    $path = $request->file('hasil')->store('tickets/hasil', 'public');
+
+    $ticket->update(['hasil_penelitian_path' => $path]);
+
+    return back()->with('success', 'Hasil penelitian berhasil diupload. Menunggu verifikasi admin.');
+}
+
+public function destroyHasil(Ticket $ticket)
+{
+    abort_unless($ticket->user_id === auth()->id(), 403);
+
+    if ($ticket->hasil_penelitian_path) {
+        Storage::disk('public')->delete($ticket->hasil_penelitian_path);
+    }
+
+    $ticket->update(['hasil_penelitian_path' => null]);
+
+    return back()->with('success', 'Hasil penelitian dihapus.');
+}
+
 }

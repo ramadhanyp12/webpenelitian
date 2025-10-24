@@ -117,7 +117,7 @@ class TicketController extends Controller
     // 1) Validasi sesuai form admin
     $data = $request->validate([
         'judul_penelitian'  => ['required','string','max:255'],
-        'status'            => ['required','in:dikirim,menunggu_persetujuan,disetujui,ditolak,selesai'],
+        'status'            => ['required','in:dikirim,menunggu_persetujuan,disetujui,ditolak,menunggu_hasil,selesai'],
 
         // multi-file
         'surat_files'       => ['nullable','array'],
@@ -199,4 +199,15 @@ class TicketController extends Controller
 
     return back()->with('success', 'Dokumen dihapus.');
 }
+public function destroyHasil(Ticket $ticket)
+{
+    if ($ticket->hasil_penelitian_path) {
+        Storage::disk('public')->delete($ticket->hasil_penelitian_path);
+    }
+
+    $ticket->update(['hasil_penelitian_path' => null]);
+
+    return back()->with('success','Hasil penelitian dihapus.');
+}
+
 }

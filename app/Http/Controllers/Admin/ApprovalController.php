@@ -185,10 +185,10 @@ class ApprovalController extends Controller
 
     $approval->update(['generated_pdf_path' => $path]); // sekarang aman
     if ($approval->ticket) {
-        $approval->ticket->update(['hasil_pdf_path' => $path, 'status' => 'selesai']);
+        $approval->ticket->update(['hasil_pdf_path' => $path, 'status' => 'menunggu hasil']);
     }
 
-    return back()->with('success', 'PDF berhasil dibuat & disimpan.');
+    return back()->with('success', 'PDF berhasil dibuat. Status tiket diubah ke "menunggu_hasil".');
 }
 
 public function show(ApprovalDocument $approval)
