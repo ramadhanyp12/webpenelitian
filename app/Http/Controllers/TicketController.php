@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Ticket;
 use App\Models\TicketDocument;
 use App\Models\ApprovalDocument;
@@ -10,6 +11,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Notification;
+
+// Notifications
+use App\Notifications\TicketCreatedNotification;
+use App\Notifications\HasilUploadedNotification;
+
 
 class TicketController extends Controller
 {
@@ -116,6 +123,8 @@ class TicketController extends Controller
             ]);
         }
     }
+    $admins = User::where('role', 'admin')->get();
+    Notification::send($admins, new TicketCreatedNotification($ticket));
 
     return redirect()->route('tickets.index')
         ->with('success', 'Ticket berhasil dibuat.');
@@ -264,6 +273,9 @@ public function uploadHasil(Request $request, Ticket $ticket)
     $path = $request->file('hasil')->store('tickets/hasil', 'public');
 
     $ticket->update(['hasil_penelitian_path' => $path]);
+    // kirim notifikasi ke semua admin bahwa user sudah upload hasil
+$admins = User::where('role', 'admin')->get();
+    Notification::send($admins, new HasilUploadedNotification($ticket));
 
     return back()->with('success', 'Hasil penelitian berhasil diupload. Menunggu verifikasi admin.');
 }

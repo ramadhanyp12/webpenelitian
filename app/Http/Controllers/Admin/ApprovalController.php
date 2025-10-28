@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\ApprovalGeneratedNotification;
+use App\Notifications\TicketDeniedNotification;
 
 class ApprovalController extends Controller
 {
@@ -77,7 +80,6 @@ class ApprovalController extends Controller
 
         // update status tiket -> disetujui
         $ticket->update(['status' => 'disetujui', 'alasan_ditolak' => null]);
-
         return redirect()
             ->route('admin.approvals.edit', $approval->id)
             ->with('success', 'Approval dibuat. Kamu bisa generate PDF.');
@@ -143,7 +145,7 @@ class ApprovalController extends Controller
         'status' => 'ditolak',
         'alasan_ditolak' => $request->alasan_ditolak,
     ]);
-
+    $ticket->user->notify(new \App\Notifications\TicketDeniedNotification($ticket));
     return back()->with('success', 'Tiket ditolak. Alasan sudah disimpan & akan terlihat oleh user.');
 }
 
@@ -185,7 +187,9 @@ class ApprovalController extends Controller
 
     $approval->update(['generated_pdf_path' => $path]); // sekarang aman
     if ($approval->ticket) {
-        $approval->ticket->update(['hasil_pdf_path' => $path, 'status' => 'menunggu hasil']);
+        $approval->ticket->update(['hasil_pdf_path' => $path, 'status' => 'menunggu_hasil']);
+        $user = $approval->ticket->user;
+Notification::send($user, new ApprovalGeneratedNotification($approval));
     }
 
     return back()->with('success', 'PDF berhasil dibuat. Status tiket diubah ke "menunggu_hasil".');

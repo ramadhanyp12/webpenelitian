@@ -10,6 +10,7 @@ use App\Http\Middleware\IsAdmin;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\ApprovalController as AdminApprovalController;
+use Illuminate\Support\Facades\Mail;
 
 // === Root langsung ke login ===
 Route::redirect('/', '/login');
@@ -93,6 +94,17 @@ Route::middleware(['auth', IsAdmin::class])
             ->only(['index','show','edit','update','destroy'])
             ->names('users');
     });
+
+    Route::get('/mail-test', function () {
+    try {
+        Mail::raw('Test email dari Laravel', function ($m) {
+            $m->to('alamatmu@contoh.com')->subject('Mail Test');
+        });
+        return 'OK. Cek inbox/spam + folder "Terkirim" di akun Gmail pengirim.';
+    } catch (\Throwable $e) {
+        return 'Gagal kirim: '.$e->getMessage();
+    }
+});
 
 require __DIR__.'/auth.php';
 
