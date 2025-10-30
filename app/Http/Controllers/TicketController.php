@@ -155,66 +155,86 @@ class TicketController extends Controller
     return view('tickets.edit', compact('ticket'));
 }
 
-    public function update(Request $request, \App\Models\Ticket $ticket): \Illuminate\Http\RedirectResponse
+private function authorizeTicket(\App\Models\Ticket $ticket): void
 {
+    // Admin boleh, user biasa harus pemilik tiket
+    if (Auth::user()->role !== 'admin' && $ticket->user_id !== Auth::id()) {
+        abort(403, 'Anda tidak berhak mengakses tiket ini.');
+    }
+}
+
+    public function update(Request $request, Ticket $ticket): RedirectResponse
+{
+    // 1) Otorisasi: admin boleh; user harus pemilik tiket
     $this->authorizeTicket($ticket);
 
+    // 2) Validasi data + file
     $data = $request->validate([
         'nama'              => ['required','string','max:255'],
         'nim'               => ['required','string','max:50'],
         'program_studi'     => ['required','string','max:255'],
         'kampus'            => ['required','string','max:255'],
         'tahun_ajaran'      => ['required','string','max:20'],
+
+        // Unik per user, abaikan record yang sedang diedit
         'judul_penelitian'  => [
-        'required','string','max:255',
-        function ($attribute, $value, $fail) use ($ticket) {
-            $normalized = mb_strtolower(preg_replace('/\s+/', ' ', trim($value)));
+            'required','string','max:255',
+            function ($attribute, $value, $fail) use ($ticket) {
+                $normalized = mb_strtolower(preg_replace('/\s+/', ' ', trim($value)));
+                $exists = Ticket::where('user_id', auth()->id())
+                    ->whereRaw('LOWER(judul_penelitian) = ?', [$normalized])
+                    ->where('id', '!=', $ticket->id)
+                    ->exists();
+                if ($exists) {
+                    $fail('Judul penelitian ini sudah pernah kamu gunakan. Silakan pakai judul lain.');
+                }
+            },
+        ],
 
-            $exists = \App\Models\Ticket::where('user_id', auth()->id())
-                ->whereRaw('LOWER(judul_penelitian) = ?', [$normalized])
-                ->where('id', '!=', $ticket->id) // abaikan record yang sedang diedit
-                ->exists();
-
-            if ($exists) {
-                $fail('Judul penelitian ini sudah pernah kamu gunakan. Silakan pakai judul lain.');
-            }
-        },
-    ],
         'keterangan'        => ['nullable','string'],
         'lokasi_pengadilan' => ['nullable','string','max:255'],
 
+        // file (opsional; multiple)
         'surat_files'       => ['nullable','array'],
-        'surat_files.*'     => ['file','mimes:pdf','max:20480'],
+        'surat_files.*'     => ['file','mimes:pdf','max:20480'],      // 20 MB
         'lampiran_files'    => ['nullable','array'],
         'lampiran_files.*'  => ['file','mimes:pdf','max:20480'],
     ]);
 
+    // 3) Jangan masukkan field array file ke update kolom tiket
     unset($data['surat_files'], $data['lampiran_files']);
+
+    // 4) Update kolom tiket
     $ticket->update($data);
 
+    // 5) Tambah SURAT baru (jika ada)
     if ($request->hasFile('surat_files')) {
-        foreach ($request->file('surat_files') as $file) {
-            $path = $file->store('tickets/surat', 'public');
+        foreach ((array) $request->file('surat_files') as $file) {
+            if (!$file) continue; // jaga-jaga
+            $stored = $file->store('tickets/surat', 'public');
             $ticket->documents()->create([
                 'type'          => 'surat',
-                'file_path'     => $path,
+                'file_path'     => $stored,
                 'original_name' => $file->getClientOriginalName(),
             ]);
         }
     }
 
+    // 6) Tambah LAMPIRAN baru (jika ada)
     if ($request->hasFile('lampiran_files')) {
-        foreach ($request->file('lampiran_files') as $file) {
-            $path = $file->store('tickets/lampiran', 'public');
+        foreach ((array) $request->file('lampiran_files') as $file) {
+            if (!$file) continue;
+            $stored = $file->store('tickets/lampiran', 'public');
             $ticket->documents()->create([
                 'type'          => 'lampiran',
-                'file_path'     => $path,
+                'file_path'     => $stored,
                 'original_name' => $file->getClientOriginalName(),
             ]);
         }
     }
 
-    return redirect()->route('tickets.index')
+    return redirect()
+        ->route('tickets.index')
         ->with('success', 'Ticket berhasil diperbarui.');
 }
 
@@ -292,5 +312,33 @@ public function destroyHasil(Ticket $ticket)
 
     return back()->with('success', 'Hasil penelitian dihapus.');
 }
+
+public function destroyDocument(\App\Models\Ticket $ticket, int $documentId)
+{
+    $this->authorizeTicket($ticket);
+
+    // Coba cari di relasi surat dulu
+    $doc = $ticket->suratDocuments()->whereKey($documentId)->first();
+
+    // Kalau tidak ada, cari di relasi lampiran
+    if (!$doc) {
+        $doc = $ticket->lampiranDocuments()->whereKey($documentId)->first();
+    }
+
+    if (!$doc) {
+        abort(404, 'Dokumen tidak ditemukan.');
+    }
+
+    // Hapus file fisik jika ada path
+    if (!empty($doc->file_path)) {
+    Storage::disk('public')->delete($doc->file_path);
+}
+
+    // Hapus row database
+    $doc->delete();
+
+    return back()->with('success', 'Dokumen berhasil dihapus.');
+}
+
 
 }

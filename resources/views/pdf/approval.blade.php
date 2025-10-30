@@ -1,15 +1,23 @@
 {{-- resources/views/pdf/approval.blade.php --}}
 @php
-    // label di atas tanda tangan + kontrol tembusan
-    $lower = strtolower($approval->jabatan_penandatangan ?? '');
-    if (strpos($lower, 'wakil') !== false && strpos($lower, 'ketua') !== false) {
-        $labelTtd = 'Wakil Ketua';
-    } elseif (strpos($lower, 'ketua') !== false) {
-        $labelTtd = 'Ketua';
-    } else {
-        $labelTtd = $approval->jabatan_penandatangan ?: '';
-    }
-    $tampilkanTembusan = (strpos($lower, 'ketua') === false); // kalau Ketua, jangan tampilkan tembusan
+  $jabatanRaw = trim($approval->jabatan_penandatangan ?? '');
+  $lower      = mb_strtolower($jabatanRaw, 'UTF-8');
+
+  // map sederhana
+  if (str_contains($lower, 'wakil') && str_contains($lower, 'ketua')) {
+      $labelTtd = 'Wakil Ketua';
+  } elseif (str_contains($lower, 'ketua')) {
+      $labelTtd = 'Ketua';
+  } elseif (str_contains($lower, 'sekretaris')) {
+      $labelTtd = 'Sekretaris';
+  } elseif (str_contains($lower, 'panitera')) {
+      $labelTtd = 'Panitera';
+  } else {
+      $labelTtd = $jabatanRaw; // selain itu tampilkan lengkap
+  }
+
+  // tembusan: tampil untuk semua kecuali “Ketua” murni
+  $tampilkanTembusan = !(str_contains($lower, 'ketua') && !str_contains($lower, 'wakil'));
 @endphp
 {{-- resources/views/pdf/approval.blade.php --}}
 <!doctype html>
@@ -18,50 +26,77 @@
   <meta charset="utf-8">
   <title>Surat Rekomendasi Penelitian</title>
   <style>
-    /* Margin halaman. Top kecil agar kop bisa mepet. */
-    @page { margin: 18mm 20mm 22mm 20mm; }
+  @page { margin: 18mm 20mm 22mm 20mm; }
 
-    /* Teks dasar */
-    body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; font-size: 12px; color:#000; line-height: 1.45; }
+  body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; font-size: 12px; color:#000; line-height: 1.45; }
 
-    /* ===== KOP (pakai gambar) ===== */
-    .kop-wrap{
-      position: fixed;
-      /* angkat ke area margin supaya benar-benar mepet atas */
-      top: -10mm; left: 0; right: 0;
-      text-align: center;
-    }
-    .kop-img{
-      /* hampir selebar A4 – 180mm nyaman untuk Dompdf */
-      width: 180mm; height: auto;
-    }
-    /* spacer agar konten mulai tepat di bawah kop */
-    .kop-spacer{ height: 33mm; } /* kalau masih terlalu renggang/rapat, ubah angka ini 31–35mm */
+  .kop-wrap{ position: fixed; top: -10mm; left: 0; right: 0; text-align: center; }
+  .kop-img{ width: 180mm; height: auto; }
+  .kop-spacer{ height: 21mm; }
 
-    /* util */
-    .mb-0{margin-bottom:0}
-    .mt-8{margin-top:8px}
-    .mt-12{margin-top:12px}
-    .mt-16{margin-top:16px}
-    .mt-20{margin-top:20px}
-    .mt-28{margin-top:28px}
+  .mb-0{margin-bottom:0}
+  .mt-8{margin-top:8px}
+  .mt-12{margin-top:12px}
+  .mt-16{margin-top:16px}
+  .mt-20{margin-top:20px}
+  .mt-28{margin-top:28px}
 
-    table{ width:100%; border-collapse: collapse; }
-    .meta td{ padding:2px 0; vertical-align: top; }
-    .label{ width:120px; }     /* kolom “Nomor/Lampiran/Hal/Nama/…” */
-    .colon{ width:12px; }
+  table{ width:100%; border-collapse: collapse; }
+  .meta td{ padding:2px 0; vertical-align: top; }
+  .label{ width:120px; }
+  .colon{ width:12px; }
 
-    /* blok tanda tangan kanan */
-    .sign{
-      width: 85mm; float: right; margin-top: 14mm; position: relative; text-align: center;
-    }
-    .sign .jabatan{ margin-bottom: 40px; } /* jarak label jabatan ke ttd */
-    .stempel{ position:absolute; left: 0; top: -8px; width: 58mm; opacity: .35; }
-    .ttd{ position:absolute; left: 20mm; top: 6mm; width: 52mm; opacity: .9; }
+  /* ====== BLOK TANDA TANGAN (KANAN) ====== */
+  .sign{
+  width: 82mm;          /* sedikit lebih lebar biar leluasa */
+  float: right;
+  margin-top: 7mm;      /* jarak dari paragraf terakhir */
+  position: relative;
+  text-align: left;
+}
+.baris{ display:block; line-height:1.25; }
 
-    /* tautan non-biru */
-    a{ color:#000; text-decoration:none; }
-  </style>
+/* Salam tepat di atas label jabatan (pojok kanan blok tanda tangan) */
+.salam-sign{
+  position: absolute;
+  right: 2mm;           /* jangan terlalu mepet tepi */
+  top: -12mm;           /* pas di atas label jabatan */
+  font-style: italic;
+}
+
+/* Label jabatan beri ruang kosong untuk stempel+ttd di bawahnya */
+.jabatan{
+  margin-top: 0;
+  margin-bottom: 20mm;  /* ruang untuk stempel & coretan ttd */
+}
+
+/* Stempel & TTD: lebih kecil dan overlap presisi */
+.stempel{
+  position: absolute;
+  left: 26mm;           /* geser sedikit ke tengah label */
+  top:  -4mm;           /* sedikit naik */
+  width: 24mm;          /* kecilkan ukuran stempel */
+  opacity: .28;
+}
+.ttd{
+  position: absolute;
+  left:  8mm;           /* mulai sedikit kiri agar “jatuh” ke tengah stempel */
+  top:   -2mm;          /* sejajarkan dengan label jabatan */
+  width: 48mm;          /* kecilkan ukuran tanda tangan */
+  opacity: .90;
+}
+
+/* Tembusan sejajar paragraf kiri, di bawah blok tanda tangan */
+.tembusan{
+  position: static;
+  clear: both;
+  margin-top: 10mm;
+  margin-left: 0;       /* otomatis sejajar dengan margin konten (20mm halaman) */
+  font-size: 12px;
+}
+  a{ color:#000; text-decoration:none; }
+</style>
+
 </head>
 <body>
 
@@ -122,47 +157,38 @@
     {{ $jenjang ?? 'Tesis' }} dengan judul <strong>“{{ $approval->judul_penelitian }}”</strong>.
   </p>
   <p>Demikian surat rekomendasi ini diberikan untuk dapat dipergunakan sebagaimana mestinya.</p>
-
-  {{-- Tempat & tanggal --}}
-  <p class="mt-12">Diterbitkan di PTA GORONTALO, pada tanggal {{ $tanggalCetak ?? \Carbon\Carbon::parse($approval->tanggal_surat)->translatedFormat('d F Y') }}.</p>
-
-  {{-- ===== Blok tanda tangan kanan ===== --}}
-  @php
-    $jabatanText = trim($approval->jabatan_penandatangan ?? '');
-    $jabatanAtasTtd = $jabatanText !== '' ? $jabatanText : 'Wakil Ketua';
-
-    // jika jabatan mengandung "ketua" (ketua/wakil ketua), tentukan apakah tembusan perlu ditampilkan
-    $lowerJabatan = mb_strtolower($jabatanText, 'UTF-8');
-    $tampilkanTembusan = !str_contains($lowerJabatan, 'ketua') || str_contains($lowerJabatan, 'wakil');
-  @endphp
-
-  <div class="sign">
-    <div class="jabatan"><strong>{{ $jabatanAtasTtd }}</strong></div>
-
-    @if(!empty($stempel_img))
-      <img class="stempel" src="{{ $stempel_img }}">
-    @endif
-    @if(!empty($ttd_img))
-      <img class="ttd" src="{{ $ttd_img }}">
-    @endif
-
-    <div class="mt-28" style="text-decoration: underline; font-weight:bold;">
-      {{ $approval->nama_penandatangan }}
-    </div>
-    <div>NIP. {{ $approval->nip_penandatangan ?: '-' }}</div>
-  </div>
-
   {{-- Salam penutup --}}
   <div style="clear: both;"></div>
-  <p class="mt-20"><em>Wassalamu’alaikum Wr. Wb.</em></p>
 
-  {{-- Tembusan (hanya bila yang tanda tangan bukan “Ketua”, atau khusus Wakil Ketua tetap tampil) --}}
-  @if($tampilkanTembusan)
-    <div class="mt-8">
-      <strong>Tembusan :</strong><br>
-      Yth. Ketua Pengadilan Tinggi Agama Gorontalo.
-    </div>
+<div class="sign">
+  <div class="salam-sign"><em>Wassalamu’alaikum Wr. Wb.</em></div>
+
+  <div class="jabatan">
+    <strong class="baris">{{ $labelTtd }}</strong>
+    <span class="baris">Gorontalo</span>
+  </div>
+
+  @if(!empty($stempel_img))
+    <img class="stempel" src="{{ $stempel_img }}">
   @endif
+  @if(!empty($ttd_img))
+    <img class="ttd" src="{{ $ttd_img }}">
+  @endif
+
+  <div class="baris" style="font-weight:700; margin-top: 2mm;">
+    {{ $approval->nama_penandatangan }}
+  </div>
+  <!-- NIP dihilangkan sesuai permintaan -->
+</div>
+
+  {{-- Tembusan (muncul untuk selain “Ketua” murni) --}}
+@if($tampilkanTembusan)
+  <div class="tembusan">
+    <strong>Tembusan :</strong><br>
+    Yth. Ketua Pengadilan Tinggi Agama Gorontalo.
+  </div>
+@endif
+
 
 </body>
 </html>
