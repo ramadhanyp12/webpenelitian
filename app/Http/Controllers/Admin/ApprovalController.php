@@ -24,7 +24,8 @@ class ApprovalController extends Controller
             ->latest()->get();
 
         $approvals = ApprovalDocument::with(['ticket.user'])
-            ->latest()->get();
+            ->latest()
+            ->paginate(10);
 
         return view('admin.approvals.index', compact('waiting', 'approvals'));
     }

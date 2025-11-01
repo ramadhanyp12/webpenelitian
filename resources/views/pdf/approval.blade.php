@@ -47,31 +47,43 @@
   .colon{ width:12px; }
 
   /* ====== BLOK TANDA TANGAN (KANAN) ====== */
-  .sign{
-  float:right;
-  width:80mm;           /* sedikit lebih ramping */
-  margin-top:7mm;
-  position:relative;
-  text-align:left;
-}
 .baris{ display:block; line-height:1.25; }
 
-/* Salam tepat di atas label jabatan (pojok kanan blok tanda tangan) */
-.salam-sign{
-  position:absolute;
-  right:0;
-  top:-14mm;            /* naikkan hingga pas di atas “Wakil Ketua” */
-  white-space:nowrap;   /* jangan terpotong ke baris baru */
-  z-index:2;            /* pastikan di atas stempel/ttd */
-  font-style:italic;
+.signbox {
+    float: right;
+    width: 70mm;
+    margin-top: 8mm;
+    text-align: left;
+  }
+
+  .signbox .salam {
+  font-style: italic;
+  margin-bottom: -1mm;   /* samain jaraknya dengan bawah */
 }
 
-/* Sediakan ruang untuk stempel + TTD di bawah label */
-.jabatan{
-  margin:0;
-  margin-bottom:18mm;   /* ruang kosong yang cukup */
+  .signbox .jabatan {
+  font-weight: 700;
+  margin-top: 0;          /* biar nempel langsung */
 }
 
+  .signbox .kota {
+    margin-top: -1mm;    /* Rapatkan “Gorontalo” ke jabatan */
+  }
+
+  .signbox .spacer {
+    height: 17mm;        /* Ruang untuk tanda tangan manual */
+  }
+
+  .signbox .nama {
+    font-weight: 700;
+    margin-top: 2mm;
+  }
+
+  .tembusan {
+    clear: both;
+    margin-top: 10mm;
+    font-size: 12px;
+  }
 /* Stempel & TTD: kecilkan dan sejajarkan */
 .stempel{
   position:absolute;
@@ -95,13 +107,6 @@
   text-align:center;    /* atau left kalau kamu mau rata kiri */
 }
 
-/* Tembusan sejajar paragraf kiri, di bawah blok tanda tangan */
-.tembusan{
-    position: static;
-    clear: both;
-    margin-top: 10mm;
-    font-size: 12px;
-  }
   a{ color:#000; text-decoration:none; }
 </style>
 
@@ -169,18 +174,15 @@
   <div style="clear: both;"></div>
 
 {{-- ===== Blok tanda tangan (teks saja, tanpa gambar) ===== --}}
-<table style="width:100%; margin-top:24px;">
-  <tr>
-    <td></td>
-    <td style="width:50%; text-align:right; vertical-align:top;">
-      <div style="font-style:italic;">Wassalamu’alaikum Wr. Wb.</div>
-      <div style="margin-top:8mm;"><strong>{{ $labelTtd }}</strong></div>
-      <div>Gorontalo</div>
-      <div style="height:18mm;"></div> <!-- ruang kosong untuk TTD manual di luar sistem -->
-      <div style="font-weight:700;">{{ $approval->nama_penandatangan }}</div>
-    </td>
-  </tr>
-</table>
+<div class="signbox">
+  <div class="salam">Wassalamu’alaikum Wr. Wb.</div>
+  <div class="jabatan">{{ $labelTtd }}</div>
+  <div class="kota">Gorontalo,</div>
+
+  <div class="spacer"></div> <!-- ruang kosong untuk paraf/ttd manual bila diperlukan -->
+
+  <div class="nama">{{ $approval->nama_penandatangan }}</div>
+</div>
 
   {{-- Tembusan (muncul untuk selain “Ketua” murni) --}}
 @if($tampilkanTembusan)

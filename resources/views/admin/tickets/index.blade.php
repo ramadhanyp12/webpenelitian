@@ -11,9 +11,20 @@
     </div>
   @endif
 
-  <div class="mb-4">
-    <a href="{{ route('admin.tickets.create') }}" class="bg-green-600 text-white px-4 py-2 rounded">+ Buat Ticket</a>
-  </div>
+  <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+  <a href="{{ route('admin.tickets.create') }}" class="bg-green-600 text-white px-4 py-2 rounded">
+    + Buat Ticket
+  </a>
+
+  <form action="{{ route('admin.tickets.index') }}" method="GET" class="flex items-center gap-2">
+    <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari nama user / judul / NIM"
+           class="border rounded px-3 py-2 w-72" />
+    @if(!empty($q))
+      <a href="{{ route('admin.tickets.index') }}" class="text-gray-600 underline">Reset</a>
+    @endif
+    <button class="px-3 py-2 bg-blue-600 text-white rounded">Cari</button>
+  </form>
+</div>
 
   <div class="overflow-x-auto bg-white shadow rounded">
     <table class="min-w-full border border-gray-300">
@@ -35,7 +46,7 @@
       <tbody>
         @forelse ($tickets as $t)
           <tr class="border-t align-top">
-            <td class="px-4 py-2 border">{{ $loop->iteration }}</td>
+            <td class="px-4 py-2 border">{{ ($tickets->firstItem() ?? 1) + $loop->index }}</td>
             <td class="px-4 py-2 border">{{ $t->user->name }}</td>
             <td class="px-4 py-2 border">{{ $t->judul_penelitian }}</td>
 
@@ -164,5 +175,8 @@
         @endforelse
       </tbody>
     </table>
+    <div class="p-3">
+  {{ $tickets->onEachSide(1)->links() }}
+</div>
   </div>
 @endsection

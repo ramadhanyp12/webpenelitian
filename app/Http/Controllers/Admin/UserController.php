@@ -12,13 +12,26 @@ use Illuminate\Http\RedirectResponse;
 
 class UserController extends Controller
 {
-    public function index()
-    {
-        // tampilkan nama, email, kampus (lewat relasi profile)
-        $users = User::with('profile')->orderBy('name')->paginate(15);
+    public function index(Request $request)
+{
+    $q = trim($request->input('q', ''));
 
-        return view('admin.users.index', compact('users'));
-    }
+    $users = \App\Models\User::with('profile')
+        ->when($q !== '', function ($qry) use ($q) {
+            $qry->where(function ($w) use ($q) {
+                $w->where('name', 'like', "%{$q}%")
+                  ->orWhere('email', 'like', "%{$q}%")
+                  ->orWhereHas('profile', function ($p) use ($q) {
+                      $p->where('kampus', 'like', "%{$q}%");
+                  });
+            });
+        })
+        ->orderByDesc('id')
+        ->paginate(10)                  // << paginate
+        ->withQueryString();            // << pertahankan q saat pindah halaman
+
+    return view('admin.users.index', compact('users', 'q'));
+}
 
     public function show(User $user)
     {

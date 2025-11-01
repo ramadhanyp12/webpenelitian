@@ -12,15 +12,31 @@ use Illuminate\Validation\Rule;
 
 class TicketController extends Controller
 {
-    public function index()
-    {
-        // Admin lihat semua tiket + eager load dokumen dan user
-        $tickets = Ticket::with(['user', 'suratDocuments', 'lampiranDocuments'])
-            ->latest()
-            ->get();
+    public function index(Request $request)
+{
+    $q = trim((string) $request->get('q', ''));
 
-        return view('admin.tickets.index', compact('tickets'));
-    }
+    $tickets = Ticket::with(['user', 'suratDocuments', 'lampiranDocuments'])
+        ->when($q !== '', function ($query) use ($q) {
+            $query->where(function ($qq) use ($q) {
+                $qq->where('judul_penelitian', 'like', "%{$q}%")
+                   ->orWhere('nama', 'like', "%{$q}%")
+                   ->orWhere('nim', 'like', "%{$q}%");
+            })
+            ->orWhereHas('user', function ($uq) use ($q) {
+                $uq->where('name', 'like', "%{$q}%");
+            });
+        })
+        ->latest()
+        ->paginate(10)        // <= pagination
+        ->withQueryString();  // <= agar ?q=... tetap ada saat pindah halaman
+
+    return view('admin.tickets.index', [
+        'tickets' => $tickets,
+        'q'       => $q,
+    ]);
+}
+
 
     public function create()
 {

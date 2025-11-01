@@ -4,6 +4,18 @@
 
 @section('content')
   <h1 class="text-2xl font-bold mb-6">Data User</h1>
+  <form method="GET" action="{{ route('admin.users.index') }}" class="mb-4 flex items-center gap-2">
+  <input type="text"
+         name="q"
+         value="{{ $q ?? '' }}"
+         placeholder="Cari nama, email, atau kampus…"
+         class="border rounded px-3 py-2 w-72">
+  <button class="px-4 py-2 bg-blue-600 text-white rounded">Cari</button>
+
+  @if(!empty($q))
+    <a href="{{ route('admin.users.index') }}" class="px-3 py-2 border rounded">Reset</a>
+  @endif
+</form>
 
   @if(session('success'))
     <div class="bg-green-100 text-green-800 border border-green-300 p-3 rounded mb-4">{{ session('success') }}</div>

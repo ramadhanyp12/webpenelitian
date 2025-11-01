@@ -85,7 +85,7 @@
         <tbody>
           @forelse($approvals as $a)
             <tr>
-              <td class="px-4 py-2 border">{{ $loop->iteration }}</td>
+              <td class="px-4 py-2 border">{{ $approvals->firstItem() + $loop->index }}</td>
               <td class="px-4 py-2 border">{{ $a->ticket->user->name ?? '-' }}</td>
               <td class="px-4 py-2 border">{{ $a->nomor_surat }}</td>
               <td class="px-4 py-2 border">{{ $a->judul_penelitian }}</td>
@@ -135,6 +135,9 @@
           @endforelse
         </tbody>
       </table>
+      <div class="px-3 py-3">
+  {{ $approvals->withQueryString()->links() }}
+</div>
     </div>
   </div>
 @endsection
