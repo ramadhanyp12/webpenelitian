@@ -48,52 +48,60 @@
 
   /* ====== BLOK TANDA TANGAN (KANAN) ====== */
   .sign{
-  width: 82mm;          /* sedikit lebih lebar biar leluasa */
-  float: right;
-  margin-top: 7mm;      /* jarak dari paragraf terakhir */
-  position: relative;
-  text-align: left;
+  float:right;
+  width:80mm;           /* sedikit lebih ramping */
+  margin-top:7mm;
+  position:relative;
+  text-align:left;
 }
 .baris{ display:block; line-height:1.25; }
 
 /* Salam tepat di atas label jabatan (pojok kanan blok tanda tangan) */
 .salam-sign{
-  position: absolute;
-  right: 2mm;           /* jangan terlalu mepet tepi */
-  top: -12mm;           /* pas di atas label jabatan */
-  font-style: italic;
+  position:absolute;
+  right:0;
+  top:-14mm;            /* naikkan hingga pas di atas “Wakil Ketua” */
+  white-space:nowrap;   /* jangan terpotong ke baris baru */
+  z-index:2;            /* pastikan di atas stempel/ttd */
+  font-style:italic;
 }
 
-/* Label jabatan beri ruang kosong untuk stempel+ttd di bawahnya */
+/* Sediakan ruang untuk stempel + TTD di bawah label */
 .jabatan{
-  margin-top: 0;
-  margin-bottom: 20mm;  /* ruang untuk stempel & coretan ttd */
+  margin:0;
+  margin-bottom:18mm;   /* ruang kosong yang cukup */
 }
 
-/* Stempel & TTD: lebih kecil dan overlap presisi */
+/* Stempel & TTD: kecilkan dan sejajarkan */
 .stempel{
-  position: absolute;
-  left: 26mm;           /* geser sedikit ke tengah label */
-  top:  -4mm;           /* sedikit naik */
-  width: 24mm;          /* kecilkan ukuran stempel */
-  opacity: .28;
+  position:absolute;
+  left:22mm;            /* kira-kira tengah blok */
+  top:-3mm;             /* sedikit naik */
+  width:24mm;           /* lebih kecil */
+  opacity:.28;
+  z-index:0;
 }
 .ttd{
-  position: absolute;
-  left:  8mm;           /* mulai sedikit kiri agar “jatuh” ke tengah stempel */
-  top:   -2mm;          /* sejajarkan dengan label jabatan */
-  width: 48mm;          /* kecilkan ukuran tanda tangan */
-  opacity: .90;
+  position:absolute;
+  left:6mm;             /* mulai sedikit kiri, melintas di atas stempel */
+  top:-1mm;
+  width:50mm;           /* lebih kecil dari sebelumnya */
+  opacity:.9;
+  z-index:1;
+}
+  .penandatangan-nama{
+  margin-top:3mm;
+  font-weight:700;
+  text-align:center;    /* atau left kalau kamu mau rata kiri */
 }
 
 /* Tembusan sejajar paragraf kiri, di bawah blok tanda tangan */
 .tembusan{
-  position: static;
-  clear: both;
-  margin-top: 10mm;
-  margin-left: 0;       /* otomatis sejajar dengan margin konten (20mm halaman) */
-  font-size: 12px;
-}
+    position: static;
+    clear: both;
+    margin-top: 10mm;
+    font-size: 12px;
+  }
   a{ color:#000; text-decoration:none; }
 </style>
 
@@ -175,10 +183,9 @@
     <img class="ttd" src="{{ $ttd_img }}">
   @endif
 
-  <div class="baris" style="font-weight:700; margin-top: 2mm;">
+  <div class="penandatangan-nama">
     {{ $approval->nama_penandatangan }}
   </div>
-  <!-- NIP dihilangkan sesuai permintaan -->
 </div>
 
   {{-- Tembusan (muncul untuk selain “Ketua” murni) --}}

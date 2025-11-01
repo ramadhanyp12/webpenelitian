@@ -84,7 +84,7 @@
 
     {{-- SURAT saat ini --}}
     <div class="border rounded p-3 mb-4">
-      <div class="font-semibold mb-2">Surat saat ini ({{ $ticket->suratDocuments->count() }})</div>
+      <div class="font-semibold mb-2">Surat permohonan saat ini ({{ $ticket->suratDocuments->count() }})</div>
       @if($ticket->suratDocuments->count())
         <ul class="list-disc ml-5 space-y-1">
           @foreach ($ticket->suratDocuments as $doc)
@@ -108,7 +108,7 @@
 
     {{-- LAMPIRAN saat ini --}}
     <div class="border rounded p-3 mb-4">
-      <div class="font-semibold mb-2">Lampiran saat ini ({{ $ticket->lampiranDocuments->count() }})</div>
+      <div class="font-semibold mb-2">Lampiran permohonan saat ini ({{ $ticket->lampiranDocuments->count() }})</div>
       @if($ticket->lampiranDocuments->count())
         <ul class="list-disc ml-5 space-y-1">
           @foreach ($ticket->lampiranDocuments as $doc)
@@ -132,13 +132,13 @@
 
     {{-- Upload baru --}}
     <div>
-      <label class="block mb-1 font-medium">Tambah Surat baru (PDF, max 20MB/file)</label>
+      <label class="block mb-1 font-medium">Tambah Surat permohonan baru (PDF, max 20MB/file)</label>
       <input type="file" name="surat_files[]" accept="application/pdf" class="w-full border rounded px-3 py-2" multiple>
       @error('surat_files.*') <div class="text-red-600 text-sm mt-1">{{ $message }}</div> @enderror
     </div>
 
     <div>
-      <label class="block mb-1 font-medium">Tambah Lampiran baru (PDF, max 20MB/file)</label>
+      <label class="block mb-1 font-medium">Tambah Lampiran permohonan baru (PDF, max 20MB/file)</label>
       <input type="file" name="lampiran_files[]" accept="application/pdf" class="w-full border rounded px-3 py-2" multiple>
       @error('lampiran_files.*') <div class="text-red-600 text-sm mt-1">{{ $message }}</div> @enderror
     </div>

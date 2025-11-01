@@ -37,7 +37,7 @@
 
     {{-- Surat --}}
     <div class="mb-3">
-      <div class="font-medium">Surat:</div>
+      <div class="font-medium">Surat Permohonan:</div>
       @if($ticket->suratDocuments->count())
         <ul class="list-disc ml-5">
           @foreach($ticket->suratDocuments as $doc)
@@ -55,7 +55,7 @@
 
     {{-- Lampiran --}}
     <div class="mb-3">
-      <div class="font-medium">Lampiran:</div>
+      <div class="font-medium">Lampiran Permohonan:</div>
       @if($ticket->lampiranDocuments->count())
         <ul class="list-disc ml-5">
           @foreach($ticket->lampiranDocuments as $doc)
@@ -73,7 +73,7 @@
 
     {{-- Hasil final (opsional) --}}
     <div>
-      <div class="font-medium">Hasil:</div>
+      <div class="font-medium">Surat Izin:</div>
       @if($ticket->hasil_pdf_path)
         <a href="{{ asset('storage/'.$ticket->hasil_pdf_path) }}" target="_blank" class="text-blue-600 underline">
           Lihat hasil

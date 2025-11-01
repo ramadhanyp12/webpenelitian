@@ -24,8 +24,8 @@
           <th class="px-4 py-2 border">Judul</th>
           <th class="px-4 py-2 border">Status</th>
           {{-- Dokumen dibagi 4 kolom --}}
-          <th class="px-4 py-2 border">Surat</th>
-          <th class="px-4 py-2 border">Lampiran</th>
+          <th class="px-4 py-2 border">Surat Permohonan</th>
+          <th class="px-4 py-2 border">Lampiran Permohonan</th>
           <th class="px-4 py-2 border">Surat Izin</th>
           <th class="px-4 py-2 border">Hasil Penelitian</th>
           <th class="px-4 py-2 border">Aksi</th>

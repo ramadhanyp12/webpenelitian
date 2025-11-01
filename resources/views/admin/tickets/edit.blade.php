@@ -22,7 +22,7 @@
   {{-- ============ BLOK DAFTAR DOKUMEN (DI LUAR FORM UTAMA) ============ --}}
   <div class="space-y-4 mb-6">
     <div class="border rounded p-3">
-      <div class="font-semibold mb-2">Surat saat ini ({{ $ticket->suratDocuments()->count() }})</div>
+      <div class="font-semibold mb-2">Surat permohonan saat ini ({{ $ticket->suratDocuments()->count() }})</div>
       @if($ticket->suratDocuments()->count())
         <ul class="list-disc ml-5 space-y-1">
           @foreach ($ticket->suratDocuments as $doc)
@@ -46,7 +46,7 @@
     </div>
 
     <div class="border rounded p-3">
-      <div class="font-semibold mb-2">Lampiran saat ini ({{ $ticket->lampiranDocuments()->count() }})</div>
+      <div class="font-semibold mb-2">Lampiran permohonan saat ini ({{ $ticket->lampiranDocuments()->count() }})</div>
       @if($ticket->lampiranDocuments()->count())
         <ul class="list-disc ml-5 space-y-1">
           @foreach ($ticket->lampiranDocuments as $doc)
@@ -91,17 +91,17 @@
     </div>
 
     <div>
-      <label class="block mb-1 font-medium">Tambah Surat baru (PDF, bisa lebih dari satu, max 20MB/file)</label>
+      <label class="block mb-1 font-medium">Tambah Surat permohonan baru (PDF, bisa lebih dari satu, max 20MB/file)</label>
       <input type="file" name="surat_files[]" accept="application/pdf" class="w-full border rounded px-3 py-2" multiple>
     </div>
 
     <div>
-      <label class="block mb-1 font-medium">Tambah Lampiran baru (PDF, bisa lebih dari satu, max 20MB/file)</label>
+      <label class="block mb-1 font-medium">Tambah Lampiran permohonan baru (PDF, bisa lebih dari satu, max 20MB/file)</label>
       <input type="file" name="lampiran_files[]" accept="application/pdf" class="w-full border rounded px-3 py-2" multiple>
     </div>
 
     <div>
-      <label class="block mb-1 font-medium">Upload Hasil Final (PDF, max 20MB)</label>
+      <label class="block mb-1 font-medium">Upload Surat Izin (PDF, max 20MB)</label>
       <input type="file" name="hasil_pdf" accept="application/pdf" class="w-full border rounded px-3 py-2">
       @if ($ticket->hasil_pdf_path)
         <p class="text-sm mt-1">
