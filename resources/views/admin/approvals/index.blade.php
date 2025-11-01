@@ -105,6 +105,14 @@
                     <button class="px-3 py-1 bg-indigo-600 text-white rounded">Generate PDF</button>
                   </form>
 
+                  {{-- Tombol upload signed PDF (hanya muncul kalau sudah ada generated_pdf_path) --}}
+@if($a->generated_pdf_path)
+  <a href="{{ route('admin.approvals.release', $a->id) }}"
+     class="px-3 py-1 bg-green-600 text-white rounded">
+     Upload Signed
+  </a>
+@endif
+
                   {{-- (opsional) Tolak dari sini juga --}}
                   <details class="w-full">
                     <summary class="cursor-pointer select-none text-red-700 hover:underline">

@@ -23,9 +23,12 @@ class ApprovalDocument extends Model
         'ttd_path',
         'stempel_path',
         'generated_pdf_path',
+        'signed_pdf_path',
+        'released_to_user',
     ];
 
     protected $casts = [
+        'released_to_user' => 'boolean',
         'tanggal_surat' => 'date',
     ];
 

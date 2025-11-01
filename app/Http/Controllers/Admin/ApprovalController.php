@@ -61,20 +61,20 @@ class ApprovalController extends Controller
             'tujuan'                => ['required','string','max:255'],
             'judul_penelitian'      => ['required','string','max:255'],
 
-            'ttd'                   => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
-            'stempel'               => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
+            // 'ttd'                   => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
+            // 'stempel'               => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
         ], [
             'nomor_surat.unique'    => 'Nomor surat sudah digunakan. Silakan pakai nomor lain.',
         ]);
 
         $data['ticket_id'] = $ticket->id;
 
-        if ($request->hasFile('ttd')) {
-            $data['ttd_path'] = $request->file('ttd')->store('approvals/ttd', 'public');
-        }
-        if ($request->hasFile('stempel')) {
-            $data['stempel_path'] = $request->file('stempel')->store('approvals/stempel', 'public');
-        }
+        // if ($request->hasFile('ttd')) {
+        //     $data['ttd_path'] = $request->file('ttd')->store('approvals/ttd', 'public');
+        // }
+        // if ($request->hasFile('stempel')) {
+        //     $data['stempel_path'] = $request->file('stempel')->store('approvals/stempel', 'public');
+        // }
 
         $approval = ApprovalDocument::create($data);
 
@@ -114,20 +114,20 @@ class ApprovalController extends Controller
             'tujuan'                => ['required','string','max:255'],
             'judul_penelitian'      => ['required','string','max:255'],
 
-            'ttd'                   => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
-            'stempel'               => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
+            // 'ttd'                   => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
+            // 'stempel'               => ['nullable','file','mimes:png,jpg,jpeg','max:5120'],
         ], [
             'nomor_surat.unique'    => 'Nomor surat sudah digunakan. Silakan pakai nomor lain.',
         ]);
 
-        if ($request->hasFile('ttd')) {
-            if ($approval->ttd_path) Storage::disk('public')->delete($approval->ttd_path);
-            $data['ttd_path'] = $request->file('ttd')->store('approvals/ttd', 'public');
-        }
-        if ($request->hasFile('stempel')) {
-            if ($approval->stempel_path) Storage::disk('public')->delete($approval->stempel_path);
-            $data['stempel_path'] = $request->file('stempel')->store('approvals/stempel', 'public');
-        }
+        // if ($request->hasFile('ttd')) {
+        //     if ($approval->ttd_path) Storage::disk('public')->delete($approval->ttd_path);
+        //     $data['ttd_path'] = $request->file('ttd')->store('approvals/ttd', 'public');
+        // }
+        // if ($request->hasFile('stempel')) {
+        //     if ($approval->stempel_path) Storage::disk('public')->delete($approval->stempel_path);
+        //     $data['stempel_path'] = $request->file('stempel')->store('approvals/stempel', 'public');
+        // }
 
         $approval->update($data);
 
@@ -154,45 +154,90 @@ class ApprovalController extends Controller
 {
     $approval->load(['ticket.user']);
 
+    // helper untuk embedd gambar kop/heading
     $encode = function (?string $path) {
-    if (!$path) return null;
-    $full = public_path($path);
-    if (!file_exists($full)) return null;
-    $ext  = pathinfo($full, PATHINFO_EXTENSION);
-    $bin  = @file_get_contents($full);
-    return $bin === false ? null : 'data:image/'.$ext.';base64,'.base64_encode($bin);
+        if (!$path) return null;
+        $full = public_path($path);
+        if (!file_exists($full)) return null;
+        $ext  = pathinfo($full, PATHINFO_EXTENSION);
+        $bin  = @file_get_contents($full);
+        return $bin === false ? null : 'data:image/'.$ext.';base64,'.base64_encode($bin);
     };
 
-    $logo_kop    = $encode('images/logokop.png');
-    $header_img  = $encode('images/headersurat.png');
-    $ttd_img     = $approval->ttd_path     ? $encode('storage/'.$approval->ttd_path)     : null;
-    $stempel_img = $approval->stempel_path ? $encode('storage/'.$approval->stempel_path) : null;
+    $header_img   = $encode('images/headersurat.png');
+    $logo_kop     = $encode('images/logokop.png');
 
-    // ⬇️ JANGAN tempel ke model. Pakai variabel lokal saja
-    $tanggalCetak = Carbon::parse($approval->tanggal_surat)->translatedFormat('d F Y');
+    // catatan: tidak kirim $ttd_img / $stempel_img lagi
+    $tanggalCetak = \Carbon\Carbon::parse($approval->tanggal_surat)->translatedFormat('d F Y');
 
-    $pdf = Pdf::loadView('pdf.approval', [
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.approval', [
                 'approval'     => $approval,
-                'logo_kop'     => $logo_kop,
                 'header_img'   => $header_img,
-                'ttd_img'      => $ttd_img,
-                'stempel_img'  => $stempel_img,
-                'tanggalCetak' => $tanggalCetak, // ⬅️ kirim ke view
-           ])
-           ->setPaper('A4', 'portrait')
-           ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+                'logo_kop'     => $logo_kop,
+                'tanggalCetak' => $tanggalCetak,
+            ])
+            ->setPaper('A4', 'portrait')
+            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
 
+    // simpan hanya sebagai arsip internal admin
     $path = 'approvals/generated/approval-'.$approval->id.'.pdf';
-    Storage::disk('public')->put($path, $pdf->output());
+    \Storage::disk('public')->put($path, $pdf->output());
 
-    $approval->update(['generated_pdf_path' => $path]); // sekarang aman
+    // update kolom di approval (BUKAN ke tiket/user)
+    $approval->update(['generated_pdf_path' => $path]);
+
+    // ubah status tiket -> DISETUJUI (sesuai kebutuhan baru)
     if ($approval->ticket) {
-        $approval->ticket->update(['hasil_pdf_path' => $path, 'status' => 'menunggu_hasil']);
-        $user = $approval->ticket->user;
-Notification::send($user, new ApprovalGeneratedNotification($approval));
+        $approval->ticket->update([
+            'status' => 'disetujui',
+            // jangan menyentuh hasil_pdf_path di tahap ini
+        ]);
     }
 
-    return back()->with('success', 'PDF berhasil dibuat. Status tiket diubah ke "menunggu_hasil".');
+    // tidak ada notifikasi ke user di tahap generate
+    return back()->with('success', 'PDF internal berhasil dibuat. Status tiket diubah ke "disetujui".');
+}
+
+public function releaseForm(ApprovalDocument $approval)
+{
+    $approval->load('ticket.user');
+
+    // Kamu bisa buat view sederhana admin/approvals/release.blade.php
+    // berisi input file "signed_pdf"
+    return view('admin.approvals.release', compact('approval'));
+}
+
+// Terima upload PDF bertanda tangan & rilis ke user
+public function releaseSigned(Request $request, ApprovalDocument $approval)
+{
+    $request->validate([
+        'signed_pdf' => ['required', 'file', 'mimes:pdf', 'max:20480'], // 20 MB
+    ]);
+
+    // Simpan file PDF yang sudah TTD manual
+    $path = $request->file('signed_pdf')->store('approvals/signed', 'public');
+
+    $approval->update([
+        'signed_pdf_path'  => $path,
+        'released_to_user' => true,
+    ]);
+
+    // Sekarang BARU update tiket & rilis ke user
+    if ($approval->ticket) {
+        $approval->ticket->update([
+            'hasil_pdf_path' => $path,           // muncul di sisi user
+            'status'         => 'menunggu_hasil' // sesuai skenario baru
+        ]);
+
+        // kirim notifikasi ke user pada tahap ini
+        $approval->ticket->user->notify(
+            new \App\Notifications\ApprovalGeneratedNotification($approval)
+        );
+    }
+
+    return redirect()
+        ->route('admin.approvals.index')
+        ->with('success', 'PDF bertanda tangan dirilis ke user. Status tiket menjadi "menunggu_hasil".');
 }
 
 public function show(ApprovalDocument $approval)

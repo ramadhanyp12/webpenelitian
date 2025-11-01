@@ -94,16 +94,35 @@
               @endif
             </td>
 
-            {{-- SURAT IZIN (PDF hasil generate admin) --}}
-            <td class="px-4 py-2 border">
-              @if ($t->hasil_pdf_path)
-                <a href="{{ asset('storage/'.$t->hasil_pdf_path) }}" target="_blank" class="text-blue-600 underline">
-                  Surat Izin
-                </a>
-              @else
-                <span class="text-gray-500">Belum ada</span>
-              @endif
-            </td>
+ {{-- -- SURAT IZIN (PDF hasil rilis admin) -- --}}
+<td class="px-4 py-2 border">
+  @php
+    // tentukan path & kolom sumber (baru vs lama)
+    $suratIzinPath = $t->surat_izin_pdf_path ?: $t->hasil_pdf_path;
+    $suratIzinCol  = $t->surat_izin_pdf_path ? 'surat_izin_pdf_path'
+                  : ($t->hasil_pdf_path     ? 'hasil_pdf_path'       : null);
+  @endphp
+
+  @if($suratIzinPath)
+    <div class="flex items-center gap-2">
+      <a href="{{ asset('storage/'.$suratIzinPath) }}" target="_blank" class="text-blue-600 underline">
+        Surat Izin
+      </a>
+
+      {{-- Tampilkan tombol Hapus bila ada file (baik dari kolom baru ataupun lama) --}}
+      <form action="{{ route('admin.tickets.suratizin.destroy', $t->id) }}"
+            method="POST" class="inline"
+            onsubmit="return confirm('Hapus file Surat Izin ini?');">
+        @csrf
+        @method('DELETE')
+        <input type="hidden" name="col" value="{{ $suratIzinCol }}">
+        <button type="submit" class="text-red-600 hover:underline">Hapus</button>
+      </form>
+    </div>
+  @else
+    <span class="text-gray-500">Belum ada</span>
+  @endif
+</td>
 
             {{-- HASIL PENELITIAN (upload user) --}}
             <td class="px-4 py-2 border">

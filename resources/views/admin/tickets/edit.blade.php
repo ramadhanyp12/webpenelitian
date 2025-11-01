@@ -70,6 +70,61 @@
     </div>
   </div>
 
+{{-- Surat Izin (mendukung kolom baru & lama) --}}
+@php
+  $suratPath = $ticket->surat_izin_pdf_path ?: $ticket->hasil_pdf_path;   // path yg ditampilkan
+  $suratCol  = $ticket->surat_izin_pdf_path ? 'surat_izin_pdf_path'
+             : ($ticket->hasil_pdf_path ? 'hasil_pdf_path' : null);       // nama kolom yg dihapus
+@endphp
+
+<div class="mb-4">
+  <div class="font-semibold">
+    Surat Izin {{ $ticket->surat_izin_pdf_path ? '' : '(data lama)' }}
+  </div>
+
+  @if($suratPath)
+    <a href="{{ asset('storage/'.$suratPath) }}" target="_blank" class="text-blue-600 underline">
+      Lihat
+    </a>
+
+    <form action="{{ route('admin.tickets.suratizin.destroy', $ticket->id) }}"
+          method="POST" class="inline ml-2"
+          onsubmit="return confirm('Hapus file Surat Izin ini?');">
+      @csrf
+      @method('DELETE')
+      <input type="hidden" name="col" value="{{ $suratCol }}">
+      <button class="text-red-600 hover:underline">Hapus</button>
+    </form>
+  @else
+    <div class="text-gray-500">Belum ada file Surat Izin.</div>
+  @endif
+</div>
+
+  {{-- Hasil Penelitian saat ini --}}
+<div class="mb-6">
+  <div class="font-semibold mb-2">Hasil Penelitian saat ini</div>
+  @if($ticket->hasil_pdf_path)
+    <div class="flex items-center gap-3">
+      <a href="{{ asset('storage/'.$ticket->hasil_pdf_path) }}"
+         target="_blank"
+         class="text-blue-600 underline">
+        Lihat Hasil
+      </a>
+
+      <form action="{{ route('admin.tickets.hasil.destroy', $ticket->id) }}"
+            method="POST"
+            onsubmit="return confirm('Hapus file Hasil Penelitian ini?');"
+            class="inline">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="text-red-600 hover:underline">Hapus</button>
+      </form>
+    </div>
+  @else
+    <div class="text-gray-500">Belum ada file Hasil Penelitian.</div>
+  @endif
+</div>
+
   {{-- ============ FORM UTAMA UPDATE (TANPA FORM LAIN DI DALAMNYA) ============ --}}
   <form action="{{ route('admin.tickets.update', $ticket->id) }}" method="POST" enctype="multipart/form-data" class="space-y-5 max-w-xl">
     @csrf

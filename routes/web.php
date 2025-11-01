@@ -66,6 +66,8 @@ Route::middleware(['auth', IsAdmin::class])
         // Hapus HASIL PENELITIAN (ADMIN)
         Route::delete('tickets/{ticket}/hasil', [AdminTicketController::class, 'destroyHasil'])
             ->name('tickets.hasil.destroy');
+        Route::delete('tickets/{ticket}/surat-izin', [AdminTicketController::class, 'destroySuratIzin'])
+    ->name('tickets.suratizin.destroy');
 
         // ======= APPROVALS =======
         Route::get('approvals', [AdminApprovalController::class, 'index'])->name('approvals.index');
@@ -81,6 +83,15 @@ Route::middleware(['auth', IsAdmin::class])
         // Generate PDF
         Route::post('approvals/{approval}/generate-pdf', [AdminApprovalController::class, 'generatePdf'])
             ->name('approvals.generatePdf');
+
+        /* >>> Tambahan langkah 6 (upload signed, admin only) <<< */
+// Form upload PDF yang sudah TTD manual
+Route::get('approvals/{approval}/release', [AdminApprovalController::class, 'releaseForm'])
+    ->name('approvals.release');
+// Submit upload & rilis ke user (status -> menunggu_hasil + notifikasi)
+Route::post('approvals/{approval}/release', [AdminApprovalController::class, 'releaseSigned'])
+    ->name('approvals.release.store');
+/* <<< selesai tambahan >>> */
 
         // Tolak tiket
         Route::post('approvals/deny/{ticket}', [AdminApprovalController::class, 'deny'])->name('approvals.deny');

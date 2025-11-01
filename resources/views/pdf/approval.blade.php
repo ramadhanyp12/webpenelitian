@@ -168,25 +168,19 @@
   {{-- Salam penutup --}}
   <div style="clear: both;"></div>
 
-<div class="sign">
-  <div class="salam-sign"><em>Wassalamu’alaikum Wr. Wb.</em></div>
-
-  <div class="jabatan">
-    <strong class="baris">{{ $labelTtd }}</strong>
-    <span class="baris">Gorontalo</span>
-  </div>
-
-  @if(!empty($stempel_img))
-    <img class="stempel" src="{{ $stempel_img }}">
-  @endif
-  @if(!empty($ttd_img))
-    <img class="ttd" src="{{ $ttd_img }}">
-  @endif
-
-  <div class="penandatangan-nama">
-    {{ $approval->nama_penandatangan }}
-  </div>
-</div>
+{{-- ===== Blok tanda tangan (teks saja, tanpa gambar) ===== --}}
+<table style="width:100%; margin-top:24px;">
+  <tr>
+    <td></td>
+    <td style="width:50%; text-align:right; vertical-align:top;">
+      <div style="font-style:italic;">Wassalamu’alaikum Wr. Wb.</div>
+      <div style="margin-top:8mm;"><strong>{{ $labelTtd }}</strong></div>
+      <div>Gorontalo</div>
+      <div style="height:18mm;"></div> <!-- ruang kosong untuk TTD manual di luar sistem -->
+      <div style="font-weight:700;">{{ $approval->nama_penandatangan }}</div>
+    </td>
+  </tr>
+</table>
 
   {{-- Tembusan (muncul untuk selain “Ketua” murni) --}}
 @if($tampilkanTembusan)

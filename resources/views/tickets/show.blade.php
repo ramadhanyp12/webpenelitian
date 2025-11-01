@@ -71,18 +71,22 @@
       @endif
     </div>
 
-    {{-- Hasil final (opsional) --}}
-    <div>
-      <div class="font-medium">Surat Izin:</div>
-      @if($ticket->hasil_pdf_path)
-        <a href="{{ asset('storage/'.$ticket->hasil_pdf_path) }}" target="_blank" class="text-blue-600 underline">
-          Lihat hasil
-        </a>
-      @else
-        <div class="text-gray-500">Belum ada hasil</div>
-      @endif
+    {{-- Surat Izin (hanya tampil kalau sudah dirilis admin) --}}
+<div>
+  <div class="font-medium">Surat Izin:</div>
+
+  @if($ticket->status === 'menunggu_hasil' && $ticket->hasil_pdf_path)
+    <a href="{{ asset('storage/'.$ticket->hasil_pdf_path) }}" target="_blank" class="text-blue-600 underline">
+      Lihat Surat Izin (PDF)
+    </a>
+  @elseif($ticket->status === 'disetujui')
+    <div class="text-gray-500">
+      Disetujui. Menunggu admin merilis PDF bertanda tangan digital.
     </div>
-  </div>
+  @else
+    <div class="text-gray-500">Belum ada hasil</div>
+  @endif
+</div>
 
   <div class="mt-4 flex gap-3">
     <a href="{{ route('tickets.index') }}" class="px-4 py-2 rounded border">← Kembali</a>

@@ -182,10 +182,28 @@ class TicketController extends Controller
 }
 
     public function destroy(Ticket $ticket)
-    {
-        $ticket->delete();
-        return redirect()->route('admin.tickets.index')->with('success', 'Ticket dihapus.');
+{
+    // Hapus file surat/lampiran
+    foreach ($ticket->documents as $doc) {
+        if ($doc->file_path && Storage::disk('public')->exists($doc->file_path)) {
+            Storage::disk('public')->delete($doc->file_path);
+        }
     }
+
+    // Hapus hasil penelitian (jika ada)
+    if ($ticket->hasil_pdf_path && Storage::disk('public')->exists($ticket->hasil_pdf_path)) {
+        Storage::disk('public')->delete($ticket->hasil_pdf_path);
+    }
+
+    // Hapus relasi dokumen di DB
+    $ticket->documents()->delete();
+
+    // Terakhir hapus tiket
+    $ticket->delete();
+
+    return redirect()->route('admin.tickets.index')
+        ->with('success', 'Ticket dan semua file terkait berhasil dihapus.');
+}
 
     public function destroyDocument(Ticket $ticket, TicketDocument $document): RedirectResponse
 {
@@ -208,6 +226,26 @@ public function destroyHasil(Ticket $ticket)
     $ticket->update(['hasil_penelitian_path' => null]);
 
     return back()->with('success','Hasil penelitian dihapus.');
+}
+
+public function destroySuratIzin(Request $request, Ticket $ticket)
+{
+    // kolom asal file yg dikirim dari blade: 'surat_izin_pdf_path' (baru) atau 'hasil_pdf_path' (lama/fallback)
+    $col = $request->input('col');
+
+    if (!in_array($col, ['surat_izin_pdf_path', 'hasil_pdf_path'], true)) {
+        $col = 'surat_izin_pdf_path'; // default aman
+    }
+
+    $path = $ticket->$col;
+
+    if ($path) {
+        Storage::disk('public')->delete($path);
+        $ticket->$col = null;   // kosongkan kolom yang bersangkutan
+        $ticket->save();
+    }
+
+    return back()->with('success', 'File Surat Izin telah dihapus.');
 }
 
 }

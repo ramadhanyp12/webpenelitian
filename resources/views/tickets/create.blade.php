@@ -83,13 +83,13 @@
     </div>
 
     <div>
-      <label class="block mb-1 font-medium">Upload Surat (PDF, bisa lebih dari satu, max 20MB/file)</label>
+      <label class="block mb-1 font-medium">Upload Surat Permohonan (PDF, bisa lebih dari satu, max 20MB/file)</label>
       <input type="file" name="surat_files[]" accept="application/pdf" class="w-full border rounded px-3 py-2" multiple>
       <p class="text-sm text-gray-500 mt-1">Kamu bisa memilih beberapa file sekaligus.</p>
     </div>
 
     <div>
-      <label class="block mb-1 font-medium">Upload Lampiran (PDF, opsional, bisa lebih dari satu, max 20MB/file)</label>
+      <label class="block mb-1 font-medium">Upload Lampiran Permohonan (PDF, opsional, bisa lebih dari satu, max 20MB/file)</label>
       <input type="file" name="lampiran_files[]" accept="application/pdf" class="w-full border rounded px-3 py-2" multiple>
     </div>
 
