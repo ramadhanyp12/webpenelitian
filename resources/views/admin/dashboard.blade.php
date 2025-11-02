@@ -15,7 +15,7 @@
   <div class="w-full max-w-3xl mx-auto">
     <div class="relative" style="padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px;">
       <iframe
-        src="https://www.youtube-nocookie.com/embed/hP_WmfwAx8Y?rel=0&modestbranding=1"
+        src="https://www.youtube-nocookie.com/embed/cu4w7lWj5R4?rel=0&modestbranding=1"
         title="Tutorial Penggunaan Website"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
