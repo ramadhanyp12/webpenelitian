@@ -15,10 +15,19 @@ use Illuminate\Support\Facades\Mail;
 // === Root langsung ke login ===
 Route::redirect('/', '/login');
 
-// Dashboard umum
+// Dashboard: arahkan sesuai role
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $user = auth()->user();
+
+    // kalau admin, lempar ke dashboard admin
+    if ($user && $user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
+    // kalau user biasa, tampilkan dashboard user
+    return view('dashboard'); // resources/views/dashboard.blade.php (user)
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 // ===================== USER AREA =====================
 Route::middleware(['auth'])->group(function () {
