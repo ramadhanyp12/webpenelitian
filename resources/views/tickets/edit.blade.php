@@ -70,7 +70,6 @@
         $lok = old('lokasi_pengadilan', $ticket->lokasi_pengadilan);
       @endphp
       <select name="lokasi_pengadilan" id="lokasi_pengadilan" class="w-full border rounded px-3 py-2">
-          <option value="">— Pilih Lokasi —</option>
           <option value="PTA Gorontalo" {{ $lok==='PTA Gorontalo' ? 'selected' : '' }}>PTA Gorontalo</option>
           <option value="PA Gorontalo"  {{ $lok==='PA Gorontalo'  ? 'selected' : '' }}>PA Gorontalo</option>
           <option value="PA Suwawa"    {{ $lok==='PA Suwawa'    ? 'selected' : '' }}>PA Suwawa</option>

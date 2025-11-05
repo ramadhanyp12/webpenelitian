@@ -63,7 +63,6 @@
           $opsi = ['PTA Gorontalo','PA Gorontalo','PA Suwawa','PA Limboto','PA Tilamuta','PA Kwandang','PA Marisa'];
           $selected = old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? 'PTA Gorontalo');
         @endphp
-        <option value="">-- Pilih Lokasi --</option>
         @foreach($opsi as $op)
           <option value="{{ $op }}" {{ $selected === $op ? 'selected' : '' }}>{{ $op }}</option>
         @endforeach
