@@ -72,12 +72,7 @@
       <label for="lokasi_pengadilan" class="block mb-1 font-medium">Lokasi Pengadilan</label>
 <select name="lokasi_pengadilan" id="lokasi_pengadilan" class="w-full border rounded px-3 py-2">
     <option value="PTA Gorontalo" {{ old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? $ticket->lokasi_pengadilan ?? '') === 'PTA Gorontalo' ? 'selected' : '' }}>PTA Gorontalo</option>
-    <option value="PA Gorontalo" {{ old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? $ticket->lokasi_pengadilan ?? '') === 'PA Gorontalo' ? 'selected' : '' }}>PA Gorontalo</option>
-    <option value="PA Suwawa" {{ old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? $ticket->lokasi_pengadilan ?? '') === 'PA Suwawa' ? 'selected' : '' }}>PA Suwawa</option>
-    <option value="PA Limboto" {{ old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? $ticket->lokasi_pengadilan ?? '') === 'PA Limboto' ? 'selected' : '' }}>PA Limboto</option>
-    <option value="PA Tilamuta" {{ old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? $ticket->lokasi_pengadilan ?? '') === 'PA Tilamuta' ? 'selected' : '' }}>PA Tilamuta</option>
-    <option value="PA Kwandang" {{ old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? $ticket->lokasi_pengadilan ?? '') === 'PA Kwandang' ? 'selected' : '' }}>PA Kwandang</option>
-    <option value="PA Marisa" {{ old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? $ticket->lokasi_pengadilan ?? '') === 'PA Marisa' ? 'selected' : '' }}>PA Marisa</option>
+    
 </select>
 
     </div>

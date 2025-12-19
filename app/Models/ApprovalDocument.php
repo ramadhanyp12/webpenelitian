@@ -2,39 +2,35 @@
 
 namespace App\Models;
 
+use App\Models\Ticket;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class ApprovalDocument extends Model
 {
+    protected $table = 'approval_documents';
+
     protected $fillable = [
-        'ticket_id',
-        'nama_mahasiswa',
-        'nim_mahasiswa',
-        'prodi_mahasiswa',
-        'nama_penandatangan',
-        'nip_penandatangan',
-        'pangkat_gol',
-        'jabatan_penandatangan',
-        'nomor_surat',
-        'tanggal_surat',
-        'tujuan',
-        'judul_penelitian',
-        'ttd_path',
-        'stempel_path',
-        'generated_pdf_path',
-        'signed_pdf_path',
-        'released_to_user',
+        'ticket_id','nama_mahasiswa','nim_mahasiswa','prodi_mahasiswa','nama_penandatangan',
+        'nip_penandatangan','pangkat_gol','jabatan_penandatangan','nomor_surat','tanggal_surat',
+        'tujuan','judul_penelitian','ttd_path','stempel_path',
+        'generated_pdf_path','signed_pdf_path','released_to_user',
     ];
 
-    protected $casts = [
-        'released_to_user' => 'boolean',
-        'tanggal_surat' => 'date',
-    ];
-
-    public function ticket(): BelongsTo
+    // URL helper
+    public function getGeneratedPdfUrlAttribute()
     {
-        return $this->belongsTo(Ticket::class);
+        return $this->generated_pdf_path ? Storage::url($this->generated_pdf_path) : null;
     }
 
+    public function getSignedPdfUrlAttribute()
+    {
+        return $this->signed_pdf_path ? Storage::url($this->signed_pdf_path) : null;
+    }
+    
+    // >>> INI YANG WAJIB ADA <<<
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class, 'ticket_id');
+    }
 }

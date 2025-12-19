@@ -90,12 +90,21 @@
               <td class="px-4 py-2 border">{{ $a->nomor_surat }}</td>
               <td class="px-4 py-2 border">{{ $a->judul_penelitian }}</td>
               <td class="px-4 py-2 border">
-                @if($a->generated_pdf_path)
-                  <a href="{{ asset('storage/'.$a->generated_pdf_path) }}" target="_blank" class="text-blue-600 underline">Lihat PDF</a>
-                @else
-                  <span class="text-gray-500">-</span>
-                @endif
-              </td>
+    @php
+        $pdfHref = null;
+        if (!empty($a->generated_pdf_path) && \Storage::disk('public')->exists($a->generated_pdf_path)) {
+            $ts = \Storage::disk('public')->lastModified($a->generated_pdf_path); // cache-buster
+            // pakai asset('storage/...') supaya lewat /storage yang sudah di-symlink
+            $pdfHref = asset('storage/'.$a->generated_pdf_path).'?v='.$ts;
+        }
+    @endphp
+
+    @if($pdfHref)
+        <a href="{{ $pdfHref }}" target="_blank" class="text-blue-600 underline">Lihat PDF</a>
+    @else
+        <span class="text-gray-500 text-sm">-</span>
+    @endif
+</td>
               <td class="px-4 py-2 border">
                 <div class="flex flex-wrap items-center gap-2">
                   <a href="{{ route('admin.approvals.edit', $a->id) }}" class="text-yellow-600">Edit</a>

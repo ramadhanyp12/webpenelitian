@@ -50,6 +50,18 @@ class UserSeeder extends Seeder
                 'phone' => '08114312250',
                 'nim'   => '000000011', // pastikan unik
             ],
+            [
+                'name'  => 'Admin 2',
+                'email' => 'admin2@example.com',
+                'phone' => '08114312251',
+                'nim'   => '000000012', // pastikan unik
+            ],
+            [
+                'name'  => 'Admin 3',
+                'email' => 'admin3@example.com',
+                'phone' => '08114312252',
+                'nim'   => '000000013', // pastikan unik
+            ],
         ];
 
         foreach ($adminsBaru as $a) {

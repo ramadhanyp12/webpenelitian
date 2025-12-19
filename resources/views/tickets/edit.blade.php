@@ -71,12 +71,6 @@
       @endphp
       <select name="lokasi_pengadilan" id="lokasi_pengadilan" class="w-full border rounded px-3 py-2">
           <option value="PTA Gorontalo" {{ $lok==='PTA Gorontalo' ? 'selected' : '' }}>PTA Gorontalo</option>
-          <option value="PA Gorontalo"  {{ $lok==='PA Gorontalo'  ? 'selected' : '' }}>PA Gorontalo</option>
-          <option value="PA Suwawa"    {{ $lok==='PA Suwawa'    ? 'selected' : '' }}>PA Suwawa</option>
-          <option value="PA Limboto"   {{ $lok==='PA Limboto'   ? 'selected' : '' }}>PA Limboto</option>
-          <option value="PA Tilamuta"  {{ $lok==='PA Tilamuta'  ? 'selected' : '' }}>PA Tilamuta</option>
-          <option value="PA Kwandang"  {{ $lok==='PA Kwandang'  ? 'selected' : '' }}>PA Kwandang</option>
-          <option value="PA Marisa"    {{ $lok==='PA Marisa'    ? 'selected' : '' }}>PA Marisa</option>
       </select>
       @error('lokasi_pengadilan') <div class="text-red-600 text-sm mt-1">{{ $message }}</div> @enderror
     </div>

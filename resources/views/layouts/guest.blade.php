@@ -1,32 +1,27 @@
+{{-- resources/views/layouts/guest.blade.php --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>@yield('title','Website izin penelitian')</title>
 
-        <title>@yield('title', 'Website izin penelitian')</title>
-       <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+  {{-- Muat asset hasil build. Jika manifest belum ada, fallback ke @vite --}}
+  @php
+    $manifestPath = public_path('build/manifest.json');
+  @endphp
 
-
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-            <div>
-                <a href="/">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="mx-auto h-24 w-auto">
-                </a>
-            </div>
-
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
-        </div>
-    </body>
+  @if (file_exists($manifestPath))
+    @php $manifest = json_decode(file_get_contents($manifestPath), true); @endphp
+    <link rel="stylesheet" href="{{ asset('build/'.$manifest['resources/css/app.css']['file']) }}">
+    <script type="module" src="{{ asset('build/'.$manifest['resources/js/app.js']['file']) }}"></script>
+  @else
+    @vite(['resources/css/app.css','resources/js/app.js'])
+  @endif
+</head>
+<body class="min-h-screen bg-cover bg-center" style="background-image:url('{{ asset('images/pta.png') }}');">
+  <div class="min-h-screen flex items-center justify-center bg-black/30 px-4">
+    @yield('content')
+  </div>
+</body>
 </html>

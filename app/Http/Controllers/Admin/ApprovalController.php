@@ -155,7 +155,7 @@ class ApprovalController extends Controller
 {
     $approval->load(['ticket.user']);
 
-    // helper untuk embedd gambar kop/heading
+    // helper gambar kop
     $encode = function (?string $path) {
         if (!$path) return null;
         $full = public_path($path);
@@ -167,36 +167,38 @@ class ApprovalController extends Controller
 
     $header_img   = $encode('images/headersurat.png');
     $logo_kop     = $encode('images/logokop.png');
-
-    // catatan: tidak kirim $ttd_img / $stempel_img lagi
     $tanggalCetak = \Carbon\Carbon::parse($approval->tanggal_surat)->translatedFormat('d F Y');
 
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.approval', [
+    $pdf = Pdf::loadView('pdf.approval', [
                 'approval'     => $approval,
                 'header_img'   => $header_img,
                 'logo_kop'     => $logo_kop,
                 'tanggalCetak' => $tanggalCetak,
-            ])
-            ->setPaper('A4', 'portrait')
-            ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
+            ])->setPaper('A4', 'portrait')
+              ->setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true]);
 
-    // simpan hanya sebagai arsip internal admin
-    $path = 'approvals/generated/approval-'.$approval->id.'.pdf';
-    \Storage::disk('public')->put($path, $pdf->output());
+    // --- path & nama file standar ---
+    $dir      = 'approvals/generated';
+    $filename = "approval-{$approval->id}.pdf";
+    $path     = "{$dir}/{$filename}";
 
-    // update kolom di approval (BUKAN ke tiket/user)
-    $approval->update(['generated_pdf_path' => $path]);
-
-    // ubah status tiket -> DISETUJUI (sesuai kebutuhan baru)
-    if ($approval->ticket) {
-        $approval->ticket->update([
-            'status' => 'disetujui',
-            // jangan menyentuh hasil_pdf_path di tahap ini
-        ]);
+    // hapus file lama kalau ada (biar tidak ketukar)
+    if ($approval->generated_pdf_path && Storage::disk('public')->exists($approval->generated_pdf_path)) {
+        Storage::disk('public')->delete($approval->generated_pdf_path);
     }
 
-    // tidak ada notifikasi ke user di tahap generate
-    return back()->with('success', 'PDF internal berhasil dibuat. Status tiket diubah ke "disetujui".');
+    // simpan file
+    Storage::disk('public')->put($path, $pdf->output());
+
+    // simpan ke DB
+    $approval->update(['generated_pdf_path' => $path]);
+
+    // status tiket ke 'disetujui' (sesuai alurmu)
+    if ($approval->ticket) {
+        $approval->ticket->update(['status' => 'disetujui']);
+    }
+
+    return back()->with('success', 'PDF internal berhasil dibuat.');
 }
 
 public function releaseForm(ApprovalDocument $approval)
@@ -215,22 +217,30 @@ public function releaseSigned(Request $request, ApprovalDocument $approval)
         'signed_pdf' => ['required', 'file', 'mimes:pdf', 'max:20480'], // 20 MB
     ]);
 
-    // Simpan file PDF yang sudah TTD manual
-    $path = $request->file('signed_pdf')->store('approvals/signed', 'public');
+    $dir      = 'approvals/signed';
+    $filename = "approval-{$approval->id}-signed.pdf";
+    $path     = "{$dir}/{$filename}";
+
+    // hapus signed lama kalau ada
+    if ($approval->signed_pdf_path && Storage::disk('public')->exists($approval->signed_pdf_path)) {
+        Storage::disk('public')->delete($approval->signed_pdf_path);
+    }
+
+    // simpan file baru dengan nama konsisten
+    $uploadedPath = $request->file('signed_pdf')->storeAs($dir, $filename, 'public');
 
     $approval->update([
-        'signed_pdf_path'  => $path,
+        'signed_pdf_path'  => $uploadedPath, // = $path
         'released_to_user' => true,
     ]);
 
-    // Sekarang BARU update tiket & rilis ke user
+    // update tiket agar user bisa akses
     if ($approval->ticket) {
         $approval->ticket->update([
-            'hasil_pdf_path' => $path,           // muncul di sisi user
-            'status'         => 'menunggu_hasil' // sesuai skenario baru
+            'hasil_pdf_path' => $uploadedPath,
+            'status'         => 'menunggu_hasil',
         ]);
 
-        // kirim notifikasi ke user pada tahap ini
         $approval->ticket->user->notify(
             new \App\Notifications\ApprovalGeneratedNotification($approval)
         );
@@ -238,8 +248,9 @@ public function releaseSigned(Request $request, ApprovalDocument $approval)
 
     return redirect()
         ->route('admin.approvals.index')
-        ->with('success', 'PDF bertanda tangan dirilis ke user. Status tiket menjadi "menunggu_hasil".');
+        ->with('success', 'PDF bertanda tangan dirilis ke user, Status berubah menjadi menunggu_hasil.');
 }
+
 
 public function show(ApprovalDocument $approval)
 {
@@ -251,15 +262,10 @@ public function download(ApprovalDocument $approval)
 {
     abort_unless($approval->generated_pdf_path, 404, 'PDF belum digenerate.');
 
-    $full = storage_path('app/public/'.$approval->generated_pdf_path);
-
-    if (!file_exists($full)) {
-        abort(404, 'File PDF tidak ditemukan di server.');
-    }
+    $full = Storage::disk('public')->path($approval->generated_pdf_path);
+    abort_unless(file_exists($full), 404, 'File PDF tidak ditemukan di server.');
 
     return response()->file($full);
-    // Atau kalau mau auto-download:
-    // return Storage::disk('public')->download($approval->generated_pdf_path);
 }
 
 }

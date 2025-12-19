@@ -60,7 +60,7 @@
       <label for="lokasi_pengadilan" class="block mb-1 font-medium">Lokasi Pengadilan</label>
       <select name="lokasi_pengadilan" id="lokasi_pengadilan" class="w-full border rounded px-3 py-2">
         @php
-          $opsi = ['PTA Gorontalo','PA Gorontalo','PA Suwawa','PA Limboto','PA Tilamuta','PA Kwandang','PA Marisa'];
+          $opsi = ['PTA Gorontalo'];
           $selected = old('lokasi_pengadilan', $prefill['lokasi_pengadilan'] ?? 'PTA Gorontalo');
         @endphp
         @foreach($opsi as $op)
